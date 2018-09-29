@@ -1,0 +1,10 @@
+<h1>{{ damage.id }}</h1>
+{% if error_message %} <p><strong> {{error_message }}</strong></p>{% endif %}
+
+<p> Damage registration date: {{damage.register_date}}</p>
+<p> Damage gps coords: {{damage.longtitiude}}, {{damage.latitude}} </p>
+<p>Damage photo: {{ damage.photo_url }}</p>
+<img src="/{{damage.photo_url}}">
+{% if damage.damage_prediction %}
+    <a href="{% url 'road_damages:detail_with_prediction' damage.id %}">Damage prediction</a>
+{% endif %}
