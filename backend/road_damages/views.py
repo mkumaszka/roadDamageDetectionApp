@@ -1,8 +1,7 @@
 import os
 
-from django.core.files import File
 from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage, FileSystemStorage
+from django.core.files.storage import default_storage
 from django.shortcuts import render
 from django.http import HttpResponse, Http404, HttpResponseForbidden
 from django.utils import timezone
@@ -12,6 +11,7 @@ from .utils.files import save_binary, hash_file
 from .utils.images import image_to_byte_array
 from .forms import ImageUploadForm
 from .models import RegisteredDamage
+from .settings import IMAGES_ROOT
 
 
 def index(request):
@@ -45,13 +45,17 @@ def upload_pic(request):
         form = ImageUploadForm(request.POST, request.FILES)
         if form.is_valid():
             photo = form.cleaned_data['image']
-            path = default_storage.save('image.png', ContentFile(photo.read()))
+            photo_path = default_storage.save(photo.name, ContentFile(photo.read()))
+            path = os.path.join(IMAGES_ROOT, photo_path)
             image_byte_array = image_to_byte_array(path)
             filename = hash_file(image_byte_array)
             filename = filename + '.png'
-            save_binary(filename, image_byte_array)
+            curr_dir = os.getcwd()
+            path_to_save = os.path.join(IMAGES_ROOT, filename)
+            save_binary(path_to_save, image_byte_array)
             m = RegisteredDamage(register_date=timezone.now(), longtitiude=1.0, latitude=123.432, photo=filename)
-            os.remove(path)
+            path_to_remove = os.path.join(curr_dir, path)
+            os.remove(path_to_remove)
             m.save()
             return HttpResponse('image upload success')
     return HttpResponseForbidden('allowed only via POST')

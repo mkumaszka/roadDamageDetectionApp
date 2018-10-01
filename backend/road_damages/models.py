@@ -1,5 +1,6 @@
 from django.db import models
-MEDIA_ROOT = 'C:\\Users\\Martyna\\PycharmProjects\\roadDamageDetectionApp\\backend\\'
+
+from .settings import IMAGES_ROOT
 
 
 class RegisteredDamage(models.Model):
@@ -9,10 +10,9 @@ class RegisteredDamage(models.Model):
     photo = models.CharField(max_length=200)
     damage_prediction = models.OneToOneField('Prediction', blank=True, default=None, on_delete=models.SET_NULL, null=True)
 
-    # TODO check how to set proper photo url to be read by site
     @property
     def photo_url(self):
-        return MEDIA_ROOT + str(self.photo)
+        return IMAGES_ROOT + str(self.photo)
 
 
 class BoundingBox(models.Model):

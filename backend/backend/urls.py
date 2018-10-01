@@ -23,3 +23,5 @@ urlpatterns = [
     path('road_damages/', include('road_damages.urls')),
     path('admin/', admin.site.urls),
 ]
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
