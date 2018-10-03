@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils.datetime_safe import datetime
+from PIL import Image
 
+from .prediction.road_prediction import detect_tables_image
 from .settings import IMAGES_ROOT
 
 
@@ -9,12 +11,21 @@ class RegisteredDamage(models.Model):
     longtitiude = models.FloatField()
     latitude = models.FloatField()
     photo = models.CharField(max_length=200)
-    damage_prediction = models.OneToOneField('Prediction', blank=True, default=None, on_delete=models.SET_NULL,
-                                             null=True)
 
     @property
     def photo_url(self):
         return IMAGES_ROOT + str(self.photo)
+
+    def predict_damage(self):
+        image = Image.open(self.photo_url)
+        boxes, scores, classes = detect_tables_image(image)
+        predictions = zip(boxes, scores, classes)
+        for box, score, pred_class in predictions:
+            bbox = BoundingBox(left=box[0], right=box[1], top=box[2], bottom=box[3])
+            bbox.save()
+            prediction = Prediction(registered_damage=self, damage_label=pred_class, bounding_box=bbox,
+                                    confidence=score)
+            prediction.save()
 
 
 class BoundingBox(models.Model):

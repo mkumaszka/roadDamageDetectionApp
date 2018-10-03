@@ -1,9 +1,10 @@
 import numpy as np
 
-from yolo3.yolo import YOLO
+from ..yolo3.yolo import YOLO
+from ..settings import ANCHORS_PATH, CLASSES_PATH, MODEL_PATH
 
 
-def load_yolo_model(model_path, anchors_path, classes_path, score=0.3, iou=0.45):
+def load_yolo_model(model_path=MODEL_PATH, anchors_path=ANCHORS_PATH, classes_path=CLASSES_PATH, score=0.3, iou=0.45):
     """
     Loads saved yolo model.
     """
@@ -15,10 +16,11 @@ def load_yolo_model(model_path, anchors_path, classes_path, score=0.3, iou=0.45)
     return YOLO(**kwargs)
 
 
-def detect_tables_image(image, yolo):
+def detect_tables_image(image):
+    yolo = load_yolo_model()
     out_boxes, out_scores, out_classes = yolo.detect_image_boxes(image)
     out_boxes = [get_true_box(box, image) for box in out_boxes]
-    return out_boxes
+    return out_boxes, out_scores, out_classes
 
 
 def get_true_box(box, image):
