@@ -1,17 +1,19 @@
-import os
-
-from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
+from django.forms import modelformset_factory
 from django.shortcuts import render
-from django.http import HttpResponse, Http404, HttpResponseForbidden
+from django.http import HttpResponse, Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
-from .utils.files import save_binary, hash_file
-from .utils.images import image_to_byte_array
+from .utils.images import save_uploaded_photo_as_binary_array
+from .serializers import DamageSerializer
 from .forms import ImageUploadForm
 from .models import RegisteredDamage
-from .settings import IMAGES_ROOT
+
+
+# For browser website
 
 
 def index(request):
@@ -39,23 +41,43 @@ def put_image(request):
     return render(request, 'road_damages/put_image.html')
 
 
+def put_images(request):
+    return render(request, 'road_damages/put_images.html')
+
+
 @require_POST
 def upload_pic(request):
     if request.method == 'POST':
         form = ImageUploadForm(request.POST, request.FILES)
         if form.is_valid():
             photo = form.cleaned_data['image']
-            photo_path = default_storage.save(photo.name, ContentFile(photo.read()))
-            path = os.path.join(IMAGES_ROOT, photo_path)
-            image_byte_array = image_to_byte_array(path)
-            filename = hash_file(image_byte_array)
-            filename = filename + '.png'
-            curr_dir = os.getcwd()
-            path_to_save = os.path.join(IMAGES_ROOT, filename)
-            save_binary(path_to_save, image_byte_array)
+            filename = save_uploaded_photo_as_binary_array(photo)
             m = RegisteredDamage(register_date=timezone.now(), longtitiude=1.0, latitude=123.432, photo=filename)
-            path_to_remove = os.path.join(curr_dir, path)
-            os.remove(path_to_remove)
             m.save()
             return HttpResponse('image upload success')
     return HttpResponseForbidden('allowed only via POST')
+
+
+@require_POST
+def upload_multiple_images(request):
+    out_files = ''
+    for image in request.FILES.getlist("image"):
+        filename = save_uploaded_photo_as_binary_array(image)
+        damage = RegisteredDamage(register_date=timezone.now(), longtitiude=1.0, latitude=123.432, photo=filename)
+        out_files += filename + '\n'
+        damage.save()
+    return HttpResponse(out_files)
+
+
+# For mobile app - rest api
+@api_view(['POST'])
+def damage(request):
+    photo = request.data['photo']
+    filename = save_uploaded_photo_as_binary_array(photo)
+    request.data['photo'] = filename
+    serializer = DamageSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

@@ -1,14 +1,16 @@
 from django.db import models
+from django.utils.datetime_safe import datetime
 
 from .settings import IMAGES_ROOT
 
 
 class RegisteredDamage(models.Model):
-    register_date = models.DateTimeField('date registered')
+    register_date = models.DateTimeField('date registered', default=datetime.now)
     longtitiude = models.FloatField()
     latitude = models.FloatField()
     photo = models.CharField(max_length=200)
-    damage_prediction = models.OneToOneField('Prediction', blank=True, default=None, on_delete=models.SET_NULL, null=True)
+    damage_prediction = models.OneToOneField('Prediction', blank=True, default=None, on_delete=models.SET_NULL,
+                                             null=True)
 
     @property
     def photo_url(self):

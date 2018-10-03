@@ -16,11 +16,8 @@ def load_yolo_model(model_path, anchors_path, classes_path, score=0.3, iou=0.45)
 
 
 def detect_tables_image(image, yolo):
-    tables = {}
     out_boxes, out_scores, out_classes = yolo.detect_image_boxes(image)
-    page_size = [image.size[1], image.size[0]]
     out_boxes = [get_true_box(box, image) for box in out_boxes]
-    # tables[k] = out_boxes, page_size
     return out_boxes
 
 

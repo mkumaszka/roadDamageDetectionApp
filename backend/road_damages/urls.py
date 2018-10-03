@@ -9,4 +9,7 @@ urlpatterns = [
     path('<int:damage_id>/predictions/', views.detail_with_prediction, name='detail_with_prediction'),
     path('upload_pic/', views.upload_pic, name='upload_pic'),
     path('put_image/', views.put_image, name='put_image'),
+    path('put_images/', views.put_images, name='put_images'),
+    path('upload_multiple_images/', views.upload_multiple_images, name='upload_multiple_images'),
+    path('damage/', views.damage, name='damage'),
 ]
