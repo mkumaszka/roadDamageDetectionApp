@@ -6,3 +6,8 @@ class ImageUploadForm(forms.Form):
     image = forms.ImageField()
 
 
+class FileUploadForm(forms.Form):
+    """File upload form."""
+    file = forms.FileField()
+
+

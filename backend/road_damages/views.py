@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from .utils.images import save_uploaded_photo_as_binary_array
 from .serializers import DamageSerializer
-from .forms import ImageUploadForm
+from .forms import ImageUploadForm, FileUploadForm
 from .models import RegisteredDamage
 
 
@@ -45,6 +45,10 @@ def put_images(request):
     return render(request, 'road_damages/put_images.html')
 
 
+def put_video(request):
+    return render(request, 'road_damages/video_uploader.html')
+
+
 @require_POST
 def upload_pic(request):
     if request.method == 'POST':
@@ -67,6 +71,21 @@ def upload_multiple_images(request):
         out_files += filename + '\n'
         damage.save()
     return HttpResponse(out_files)
+
+
+@require_POST
+def upload_video(request):
+    if request.method == 'POST':
+        form = FileUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            video = form.cleaned_data['file']
+            # TODO process video
+            # filename = save_uploaded_photo_as_binary_array(photo)
+            # m = RegisteredDamage(register_date=timezone.now(), longtitiude=1.0, latitude=123.432, photo=filename)
+            # m.save()
+            return HttpResponse('video upload success')
+        return HttpResponseForbidden('form not valid')
+    return HttpResponseForbidden('allowed only via POST')
 
 
 # For mobile app - rest api
