@@ -18,7 +18,11 @@ class RegisteredDamage(models.Model):
 
     def predict_damage(self):
         image = Image.open(self.photo_url)
-        boxes, scores, classes = detect_tables_image(image)
+        predictions = detect_tables_image(image)
+        print(predictions)
+        if len(predictions[0]) is 0:
+            return False
+        boxes, scores, classes = predictions
         predictions = zip(boxes, scores, classes)
         for box, score, pred_class in predictions:
             bbox = BoundingBox(left=box[0], right=box[1], top=box[2], bottom=box[3])
@@ -26,6 +30,7 @@ class RegisteredDamage(models.Model):
             prediction = Prediction(registered_damage=self, damage_label=pred_class, bounding_box=bbox,
                                     confidence=score)
             prediction.save()
+        return True
 
 
 class BoundingBox(models.Model):
