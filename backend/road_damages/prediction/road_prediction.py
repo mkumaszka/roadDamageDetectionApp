@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..yolo3.yolo import YOLO
+from ..yolo3.model.yolo import YOLO
 from ..settings import ANCHORS_PATH, CLASSES_PATH, MODEL_PATH
 
 
