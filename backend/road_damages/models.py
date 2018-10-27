@@ -8,8 +8,8 @@ from .settings import IMAGES_ROOT
 
 class RegisteredDamage(models.Model):
     register_date = models.DateTimeField('date registered', default=datetime.now)
-    longtitiude = models.FloatField()
-    latitude = models.FloatField()
+    longtitiude = models.FloatField(default=0)
+    latitude = models.FloatField(default=0)
     photo = models.CharField(max_length=200)
 
     @property

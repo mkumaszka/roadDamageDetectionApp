@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -11,42 +11,6 @@ from .utils.images import save_uploaded_photo_as_binary_array
 from .serializers import DamageSerializer
 from .forms import ImageUploadForm, FileUploadForm
 from .models import RegisteredDamage
-
-
-# For browser website
-
-
-def index(request):
-    all_damages = RegisteredDamage.objects.all()
-    context = {
-        'all_damages': all_damages
-    }
-    return render(request, 'road_damages/index.html', context)
-
-
-def detail(request, damage_id):
-    try:
-        damage = RegisteredDamage.objects.get(pk=damage_id)
-    except RegisteredDamage.DoesNotExist:
-        raise Http404("Damage not in database")
-    return render(request, 'road_damages/detail.html', {'damage': damage})
-
-
-def detail_with_prediction(request, damage_id):
-    response = "You're looking at the prediction of damage %s."
-    return HttpResponse(response % damage_id)
-
-
-def put_image(request):
-    return render(request, 'road_damages/put_image.html')
-
-
-def put_images(request):
-    return render(request, 'road_damages/put_images.html')
-
-
-def put_video(request):
-    return render(request, 'road_damages/video_uploader.html')
 
 
 @require_POST
@@ -90,13 +54,36 @@ def upload_video(request):
 
 # For mobile app - rest api
 @api_view(['POST'])
-def damage(request):
-    photo = request.data['photo']
-    filename = save_uploaded_photo_as_binary_array(photo)
-    request.data['photo'] = filename
-    serializer = DamageSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+def file_upload(request):
+    photos = request.FILES.getlist("file")
+    is_valid = False
+    error_serializer = None
+    counter = 0
+    for photo in photos:
+        filename = save_uploaded_photo_as_binary_array(photo)
+        damage_data = {'photo': filename}
+        serializer = DamageSerializer(data=damage_data)
+        if serializer.is_valid():
+            serializer.save()
+            is_valid = True
+            counter += 1
+        else:
+            is_valid = False
+            error_serializer = serializer
+    if error_serializer is not None:
+        to_return = error_serializer.data
+    else:
+        to_return = {'counter': counter}
+    if is_valid:
+        return Response(to_return, status=status.HTTP_201_CREATED)
+    return Response(to_return, status=status.HTTP_400_BAD_REQUEST)
 
+
+class ListDamages(generics.ListCreateAPIView):
+    queryset = RegisteredDamage.objects.all()
+    serializer_class = DamageSerializer
+
+
+class DamageDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = RegisteredDamage.objects.all()
+    serializer_class = DamageSerializer
