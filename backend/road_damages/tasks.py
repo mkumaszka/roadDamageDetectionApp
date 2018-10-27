@@ -8,4 +8,6 @@ def make_predictions_to_images():
     for damage in damages_no_prediction:
         made_prediction = damage.predict_damage()
         if not made_prediction:
+            success = damage.remove_image()
+            print(success)
             damage.delete()

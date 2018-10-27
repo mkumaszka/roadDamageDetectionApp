@@ -1,9 +1,11 @@
+import os
+
 from django.db import models
 from django.utils.datetime_safe import datetime
 from PIL import Image
 
 from .prediction.road_prediction import detect_tables_image
-from .settings import IMAGES_ROOT
+from .settings import IMAGES_ROOT, MEDIA_ROOT
 
 
 class RegisteredDamage(models.Model):
@@ -15,6 +17,12 @@ class RegisteredDamage(models.Model):
     @property
     def photo_url(self):
         return IMAGES_ROOT + str(self.photo)
+
+    def remove_image(self):
+        photo_name = str(self.photo)
+        photo_path = os.path.join(MEDIA_ROOT, photo_name)
+        os.remove(photo_path)
+        return os.path.exists(photo_path)
 
     def predict_damage(self):
         image = Image.open(self.photo_url)
