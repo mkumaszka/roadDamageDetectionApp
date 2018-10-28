@@ -16,10 +16,12 @@ def load_yolo_model(model_path=MODEL_PATH, anchors_path=ANCHORS_PATH, classes_pa
     return YOLO(**kwargs)
 
 
-def detect_tables_image(image):
+def detect_tables_image(image, path_to_save, visualize=True):
     yolo = load_yolo_model()
     out_boxes, out_scores, out_classes = yolo.detect_image_boxes(image)
     out_boxes = [get_true_box(box, image) for box in out_boxes]
+    if visualize:
+        yolo.mark_image_boxes(image, out_boxes, out_scores, out_classes, path_to_save)
     return out_boxes, out_scores, out_classes
 
 
@@ -30,4 +32,5 @@ def get_true_box(box, image):
     bottom = min(image.size[1], np.floor(bottom + 0.5).astype('int32'))
     right = min(image.size[0], np.floor(right + 0.5).astype('int32'))
     return left, right, top, bottom
+
 

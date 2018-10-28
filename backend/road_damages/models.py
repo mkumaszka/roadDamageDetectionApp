@@ -20,13 +20,14 @@ class RegisteredDamage(models.Model):
 
     def remove_image(self):
         photo_name = str(self.photo)
-        photo_path = os.path.join(MEDIA_ROOT, photo_name)
+        photo_path = os.path.join(MEDIA_ROOT, 'images')
+        photo_path = os.path.join(photo_path, photo_name)
         os.remove(photo_path)
         return os.path.exists(photo_path)
 
-    def predict_damage(self):
+    def predict_damage(self,):
         image = Image.open(self.photo_url)
-        predictions = detect_tables_image(image)
+        predictions = detect_tables_image(image, path_to_save=self.photo_url)
         print(predictions)
         if len(predictions[0]) is 0:
             return False
@@ -51,6 +52,6 @@ class BoundingBox(models.Model):
 class Prediction(models.Model):
     registered_damage = models.ForeignKey(RegisteredDamage, on_delete=models.CASCADE)
     damage_label = models.CharField(max_length=50)
-    bounding_box = models.ForeignKey(BoundingBox, on_delete=models.PROTECT)
+    bounding_box = models.ForeignKey(BoundingBox, on_delete=models.CASCADE)
     confidence = models.FloatField()
 
