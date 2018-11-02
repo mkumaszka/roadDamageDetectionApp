@@ -1,0 +1,29 @@
+{
+    "model" : {
+        "input_size":           416,
+        "labels":               ["D00", "D01", "D10", "D11", "D20", "D40", "D43", "D44"]
+    },
+
+    "train": {
+        "train_real":   "C:/Users/Martyna/Desktop/Studia/INZ/dane/RoadDamageDataset/train_annotations.txt",
+
+        "pretrained_weights":       "",
+        "frozen_train": {
+            "learning_rate":        1e-3,
+            "nb_epoch":             50,
+            "batch_size":           2,
+            "initial_epoch":        0
+        },
+        "fine_tune_train": {
+            "learning_rate":        1e-4,
+            "nb_epoch":             100,
+            "batch_size":           2,
+            "initial_epoch":        50
+        }
+
+    },
+
+    "valid": {
+        "valid_real_folder":   "C:\\Users\\Martyna\\Desktop\\Studia\\INZ\\dane\\RoadDamageDataset\\test_annotations.txt"
+    }
+}
